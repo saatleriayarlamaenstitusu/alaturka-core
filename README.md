@@ -53,6 +53,62 @@ every day from 2022 to 2036 together with the holy days falling on it, as
 JSON, so any port can be run against it in CI and proven correct instead of
 trusted.
 
+## Layout
+
+```
+data/        canonical JSON — read it from any language
+src/         the rule layer (plain ESM, no dependencies)
+src/data/    generated mirrors of data/*.json
+fixtures/    golden reference, generated from the website
+scripts/     extraction, mirroring, fixture generation
+test/        replays the fixtures against src/
+```
+
+## Usage
+
+```js
+import { toHijri, holyDaysOn, calculateAlaturka, formatPanelLine, buildPanelSnapshot }
+  from '@alaturka/core'
+```
+
+Non-JavaScript consumers read `data/*.json` directly — vendoring this
+repository as a submodule is enough, there is nothing to build.
+
+### Why `src/data/` exists
+
+`data/*.json` is canonical, but JSON import attributes are not available in
+every runtime the core must work in — GJS, which the desktop app uses, among
+them. The JS layer therefore imports generated mirrors. `npm test` asserts the
+two are identical, which is what keeps the copy honest.
+
+## Scripts
+
+| Command | What it does |
+|---|---|
+| `npm run extract` | Rebuilds `data/*.json` from the website's modules. The tables are never retyped: the script imports the originals and dumps what they export, reading the `// Diyanet` provenance comments out of the source text. |
+| `npm run mirror` | Regenerates `src/data/*.js` from `data/*.json`. |
+| `npm run fixtures` | Rebuilds the golden reference from the website's implementation. Needs the site checked out alongside with its `node_modules`, since Luxon is imported from there. |
+| `npm test` | Replays the fixtures against `src/`, plus unit tests for the parts with no counterpart on the website. |
+
+Everything that touches local calendar days is pinned to `TZ=Europe/Istanbul`:
+a fixture generated in another zone would encode different answers, so the
+scripts refuse to run outside it.
+
 ## Status
 
-Empty. The decisions above are settled; no code has been written yet.
+The rule layer is complete and verified against the website:
+
+- 6,574 days of hijri conversion, 2021–2038, identical date for date. The
+  range overruns the table at both ends on purpose, so the out-of-table
+  estimate is pinned down as well (1,524 of those days).
+- Religious days compared across the whole range in both directions — a rule
+  that fires on a day it should not is as much a failure as one that does not
+  fire.
+- 2,254 alaturka readings sampled every 23 minutes over real Ankara prayer
+  times, matching the Luxon implementation exactly. Luxon is no longer a
+  dependency of anything here.
+
+Not yet done: the website still carries its own copy of this logic and has to
+be switched over to the package, and the core has only been exercised under
+Node. It is written to run unchanged in a browser and in GJS, but that has not
+been measured yet.
