@@ -75,6 +75,22 @@ test('the countdown crosses midnight into tomorrow’s imsak', () => {
   assert.equal(next.minutes, 31)
 })
 
+test('between midnight and imsak the next prayer is TODAY’s imsak', () => {
+  // The regression this guards: at 02:21 none of today's six times have
+  // passed, so `findVakit` falls back to yatsi (right — it is yesterday's
+  // yatsi), and walking to yatsi's successor used to land on TOMORROW's
+  // imsak and show a 27-hour countdown.
+  const now = new Date(2026, 10, 16, 2, 21)
+  const table = createVakitTable(VAKITLER, now)
+  assert.equal(findVakit(table, now), 'yatsi')
+
+  const next = nextVakit(table, now)
+  assert.equal(next.key, 'imsak')
+  assert.equal(isoDate(next.at), '2026-11-16')
+  assert.equal(next.hours, 3)
+  assert.equal(next.minutes, 39)
+})
+
 test('kerahat covers the 45 minutes after sunrise and before maghrib', () => {
   const table = createVakitTable(VAKITLER, at(8, 0))
   assert.equal(isKerahat({ hours: 0, minutes: 20 }, 'ikindi', table, at(17, 21)), true)

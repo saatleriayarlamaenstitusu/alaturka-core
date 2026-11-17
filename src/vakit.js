@@ -75,12 +75,36 @@ export function findVakit(table, now = new Date()) {
   return current
 }
 
-/** Time remaining until the next prayer, crossing midnight when needed. */
+/**
+ * Time remaining until the next prayer, crossing midnight when needed.
+ *
+ * This looks for the earliest time still ahead rather than stepping forward
+ * from the current prayer, because between midnight and imsak there is no
+ * current prayer on today's table: every one of today's six times is still
+ * in the future, `findVakit` falls back to `yatsi` (correct — it is
+ * yesterday's yatsi we are in), and stepping to its successor would reach
+ * TOMORROW's imsak and report a countdown of twenty-seven hours. Measured on
+ * the desktop app at 02:21 before the fix.
+ */
 export function nextVakit(table, now = new Date()) {
   if (!table) return null
-  const current = findVakit(table, now)
-  const key = META[current].next
-  const target = key === 'imsak' ? table.imsak.timeTomorrow : table[key].time
+
+  let key = null
+  let target = null
+  for (const k of VAKIT_KEYS) {
+    const t = table[k]?.time
+    if (!t || t <= now) continue
+    if (!target || t < target) {
+      target = t
+      key = k
+    }
+  }
+  // After yatsi there is nothing left today, so the next one is tomorrow's
+  // imsak — the only time the countdown spans a date change.
+  if (!target) {
+    key = 'imsak'
+    target = table.imsak?.timeTomorrow ?? null
+  }
   if (!target) return null
 
   const ms = target - now
