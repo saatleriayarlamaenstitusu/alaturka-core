@@ -1,7 +1,7 @@
 // Public surface of the shared core.
 //
 // Data is also published as plain JSON under `data/`, for consumers that are
-// not JavaScript: `@alaturka/core/data/hijri-months.json` and friends.
+// not JavaScript: `@alaturkavakitler/core/data/hijri-months.json` and friends.
 
 export { HIJRI_MONTHS, TABLE_RANGE, inTable, toHijri, fromHijri, hijriMonthLength, hijriNow, nowHijri, hijriMonth, monthSource } from './hijri.js'
 export { KINDS, holyDaysOn, holyDayLabel, holyDaysBetween } from './holy-days.js'

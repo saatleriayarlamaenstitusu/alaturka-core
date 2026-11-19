@@ -1,0 +1,50 @@
+# Publishes to npm when a version tag is pushed.
+#
+# No NPM_TOKEN. npm's trusted publishing exchanges the workflow's OIDC
+# token for a short-lived credential, which means there is no long-lived
+# secret in this repository to leak. The trust is configured on the npm
+# side (package settings -> trusted publisher) and names this file by
+# name, so renaming it breaks publishing until the setting is updated.
+#
+# Provenance is attached automatically by trusted publishing: the npm page
+# then states which commit and which workflow run produced the tarball.
+name: release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+  # The critical line: without it there is no OIDC token and npm falls
+  # back to asking for a credential that does not exist here.
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+
+      # Trusted publishing needs a newer npm than the one bundled with the
+      # Node image (11.5.1 is the floor).
+      - run: npm install -g npm@latest
+
+      - run: npm test
+
+      # The tag is the source of truth for the version; a mismatch means
+      # the tag was pushed before the version bump was committed.
+      - name: Does the tag match package.json
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          pkg="$(node -p "require('./package.json').version")"
+          [ "$tag" = "$pkg" ] || {
+            echo "::error::etiket v$tag ile package.json $pkg uyuşmuyor"
+            exit 1
+          }
+
+      - run: npm publish

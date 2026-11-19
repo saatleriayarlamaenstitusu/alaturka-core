@@ -1,0 +1,35 @@
+# Runs on every push: do the rules still match the golden reference.
+#
+# The fixtures are generated from the website's own output, so this is the
+# one place where "core and site agree" is actually proven. Europe/Istanbul
+# is pinned because every rule here is a local-time rule.
+name: check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # No dependencies: `npm ci` would need a lockfile this package does
+      # not have and does not want. The test runner is Node's own.
+      - run: npm test
+
+      # The mirrors under src/data/ are generated from data/*.json. If
+      # someone edits one and forgets the other, the two drift silently —
+      # regenerate and fail if anything changed.
+      - name: Are the generated mirrors up to date
+        run: |
+          npm run mirror
+          git diff --exit-code -- src/data || {
+            echo "::error::src/data güncel değil — 'npm run mirror' çalıştırıp commit et"
+            exit 1
+          }

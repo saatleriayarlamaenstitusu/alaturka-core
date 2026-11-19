@@ -1,6 +1,6 @@
 {
-  "name": "@alaturka/core",
-  "version": "0.1.0",
+  "name": "@alaturkavakitler/core",
+  "version": "0.1.1",
   "description": "Shared core for Alaturka Vakitler: hijri calendar, prayer times, alaturka clock, qibla.",
   "license": "MIT",
   "type": "module",
@@ -20,6 +20,29 @@
     "fixtures": "TZ=Europe/Istanbul node scripts/make-fixtures.js",
     "test": "TZ=Europe/Istanbul node --test test/*.test.js"
   },
-  "repository": "github:saatleriayarlamaenstitusu/alaturka-core",
-  "sideEffects": false
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/saatleriayarlamaenstitusu/alaturka-core.git"
+  },
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "bugs": {
+    "url": "https://github.com/saatleriayarlamaenstitusu/alaturka-core/issues"
+  },
+  "homepage": "https://alaturkavakitler.com",
+  "keywords": [
+    "hijri",
+    "prayer-times",
+    "namaz",
+    "vakit",
+    "alaturka",
+    "qibla",
+    "diyanet",
+    "turkey"
+  ],
+  "engines": {
+    "node": ">=18"
+  }
 }

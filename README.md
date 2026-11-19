@@ -68,7 +68,7 @@ test/        replays the fixtures against src/
 
 ```js
 import { toHijri, holyDaysOn, calculateAlaturka, formatPanelLine, buildPanelSnapshot }
-  from '@alaturka/core'
+  from '@alaturkavakitler/core'
 ```
 
 Non-JavaScript consumers read `data/*.json` directly — vendoring this
